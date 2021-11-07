@@ -37,11 +37,16 @@ func (l *LED) ApplyColor(c color.RGBA) error {
 	return nil
 }
 
-// Blink the lughts on the robot at a specified interval
+// Blink the lights on the robot at a specified interval
 func (l *LED) Blink(ctx context.Context, frequency time.Duration) error {
 	on := uint8(0xFF)
 	gobot.Every(frequency, func() {
 		err := l.driver.SetLED(gopigo3.LED_EYE_RIGHT, 0x00, 0x00, on)
+		if err != nil {
+			panic(err)
+		}
+
+		err = l.driver.SetLED(gopigo3.LED_EYE_RIGHT, 0x00, 0x00, on)
 		if err != nil {
 			panic(err)
 		}
