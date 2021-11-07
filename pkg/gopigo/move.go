@@ -2,6 +2,7 @@ package gopigo
 
 import (
 	"math"
+	"os"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -10,30 +11,53 @@ import (
 
 type Motor struct {
 	driver *gopigo3.Driver
-	debug  bool
+	logger zerolog.Logger
 }
 
-// NewMotor creates a new gopigo Motor
-func NewMotor(driver *gopigo3.Driver, debug bool) *Motor {
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	if debug {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	}
+type MotorOption func(*Motor)
 
-	return &Motor{
+// NewMotor creates a new gopigo Motor
+func NewMotor(driver *gopigo3.Driver, options ...MotorOption) *Motor {
+	var (
+		defaultLogger = zerolog.New(os.Stderr)
+	)
+
+	m := &Motor{
 		driver: driver,
-		debug:  debug,
+		logger: defaultLogger,
 	}
+	for _, option := range options {
+		option(m)
+	}
+	return m
+}
+
+func (m *Motor) WithDebug() MotorOption {
+	return func(m *Motor) {
+		m.logger = m.logger.Level(zerolog.DebugLevel)
+	}
+}
+
+func (m *Motor) debug(motor gopigo3.Motor) map[string]interface{} {
+	_, power, _, dps, _ := m.driver.GetMotorStatus(motor)
+	fields := map[string]interface{}{
+		"motor": motor,
+		"power": power,
+		"dps":   dps,
+	}
+	log.Debug().Fields(fields).Send()
+	return fields
 }
 
 // Forward moves the robot forwards
 func (m *Motor) Forward(speed int) error {
-	log.Debug().Msgf("moving forwards at speed %s", speed)
-
+	m.debug(gopigo3.MOTOR_LEFT)
 	err := m.driver.SetMotorDps(gopigo3.MOTOR_LEFT, speed)
 	if err != nil {
 		return err
 	}
+
+	m.debug(gopigo3.MOTOR_RIGHT)
 	err = m.driver.SetMotorDps(gopigo3.MOTOR_RIGHT, speed)
 	if err != nil {
 		return err
@@ -44,7 +68,7 @@ func (m *Motor) Forward(speed int) error {
 
 // Left moves the robot to the left
 func (m *Motor) Left(speed int) error {
-	log.Debug().Str("func", "left").Msgf("turning left at speed %s", speed)
+	m.debug(gopigo3.MOTOR_LEFT)
 	err := m.driver.SetMotorDps(gopigo3.MOTOR_RIGHT, speed)
 	if err != nil {
 		return err
@@ -57,7 +81,7 @@ func (m *Motor) Left(speed int) error {
 func (m *Motor) Right(speed int) error {
 	s := int(math.Abs(float64(speed)))
 
-	log.Debug().Str("func", "right").Msgf("turning right at speed %s", s)
+	m.debug(gopigo3.MOTOR_RIGHT)
 	err := m.driver.SetMotorDps(gopigo3.MOTOR_RIGHT, s)
 	if err != nil {
 		return err
@@ -69,7 +93,7 @@ func (m *Motor) Right(speed int) error {
 // Backwards moves backwards at a default speed
 func (m *Motor) Backwards(speed uint) error {
 	s := int(speed) * -1
-	log.Debug().Str("func", "backwards").Msgf("moving backwards at speed %s", s)
+	m.debug(gopigo3.MOTOR_RIGHT)
 	err := m.driver.SetMotorDps(gopigo3.MOTOR_LEFT, s)
 	if err != nil {
 		return err
@@ -85,12 +109,13 @@ func (m *Motor) Backwards(speed uint) error {
 
 // Stop sets the motor dps to zero
 func (m *Motor) Stop() error {
-	log.Debug().Str("func", "stop").Msgf("stopping motor by setting rotations to %s", 0)
+	m.debug(gopigo3.MOTOR_LEFT)
 	err := m.driver.SetMotorDps(gopigo3.MOTOR_LEFT, 0)
 	if err != nil {
 		return err
 	}
 
+	m.debug(gopigo3.MOTOR_RIGHT)
 	err = m.driver.SetMotorDps(gopigo3.MOTOR_RIGHT, 0)
 	if err != nil {
 		return err

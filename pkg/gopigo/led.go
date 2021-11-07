@@ -2,6 +2,7 @@ package gopigo
 
 import (
 	"image/color"
+	"os"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -16,6 +17,7 @@ type LED struct {
 	driver *gopigo3.Driver
 	color  color.RGBA
 	debug  bool
+	logger zerolog.Logger
 }
 
 type LEDOption func(*LED)
@@ -26,14 +28,16 @@ func NewLED(driver *gopigo3.Driver, options ...LEDOption) *LED {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	var (
-		defaultColor = colornames.Royalblue
-		defaultDebug = false
+		defaultColor  = colornames.Royalblue
+		defaultDebug  = false
+		defaultLogger = zerolog.New(os.Stderr)
 	)
 
 	led := &LED{
 		driver: driver,
 		color:  defaultColor,
 		debug:  defaultDebug,
+		logger: defaultLogger,
 	}
 
 	for _, option := range options {
