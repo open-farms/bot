@@ -3,6 +3,7 @@ module github.com/open-farms/bot
 go 1.17
 
 require (
+	github.com/rs/zerolog v1.26.0
 	gobot.io/x/gobot v1.15.0
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 )
