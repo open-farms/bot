@@ -1,7 +1,6 @@
 package gopigo
 
 import (
-	"context"
 	"image/color"
 	"time"
 
@@ -12,7 +11,6 @@ import (
 
 type LED struct {
 	driver *gopigo3.Driver
-	led    gopigo3.Led
 	color  color.RGBA
 }
 
@@ -21,7 +19,6 @@ type LED struct {
 func NewLED(driver *gopigo3.Driver, led gopigo3.Led) *LED {
 	return &LED{
 		driver: driver,
-		led:    led,
 		color:  colornames.Royalblue,
 	}
 }
@@ -29,7 +26,12 @@ func NewLED(driver *gopigo3.Driver, led gopigo3.Led) *LED {
 // ApplyColor sets the color of the gopigo's LED
 func (l *LED) ApplyColor(c color.RGBA) error {
 	l.color = c
-	err := l.driver.SetLED(l.led, l.color.R, l.color.G, l.color.B)
+	err := l.driver.SetLED(gopigo3.LED_EYE_LEFT, l.color.R, l.color.G, l.color.B)
+	if err != nil {
+		return err
+	}
+
+	err = l.driver.SetLED(gopigo3.LED_EYE_RIGHT, l.color.R, l.color.G, l.color.B)
 	if err != nil {
 		return err
 	}
@@ -38,7 +40,7 @@ func (l *LED) ApplyColor(c color.RGBA) error {
 }
 
 // Blink the lights on the robot at a specified interval
-func (l *LED) Blink(ctx context.Context, frequency time.Duration) error {
+func (l *LED) Blink(frequency time.Duration) error {
 	on := uint8(0xFF)
 	gobot.Every(frequency, func() {
 		err := l.driver.SetLED(gopigo3.LED_EYE_RIGHT, 0x00, 0x00, on)

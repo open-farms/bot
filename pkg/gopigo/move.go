@@ -4,14 +4,12 @@ import "gobot.io/x/gobot/platforms/dexter/gopigo3"
 
 type Motor struct {
 	driver *gopigo3.Driver
-	motor  gopigo3.Motor
 }
 
 // NewMotor creates a new gopigo Motor
-func NewMotor(driver *gopigo3.Driver, motor gopigo3.Motor) *Motor {
+func NewMotor(driver *gopigo3.Driver) *Motor {
 	return &Motor{
 		driver: driver,
-		motor:  motor,
 	}
 }
 
