@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/bmizerany/pat v0.0.0-20170815010413-6226ea591a40 // indirect
 	github.com/gobuffalo/uuid v2.0.5+incompatible // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect

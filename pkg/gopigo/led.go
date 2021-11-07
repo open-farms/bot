@@ -11,24 +11,41 @@ import (
 	"golang.org/x/image/colornames"
 )
 
+// LED is the led service object
 type LED struct {
 	driver *gopigo3.Driver
 	color  color.RGBA
 	debug  bool
 }
 
+type LEDOption func(*LED)
+
 // NewLED creates a new gopigo LED object for manipulating
 // the bots lights
-func NewLED(driver *gopigo3.Driver, debug bool) *LED {
+func NewLED(driver *gopigo3.Driver, options ...LEDOption) *LED {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	if debug {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+
+	var (
+		defaultColor = colornames.Royalblue
+		defaultDebug = false
+	)
+
+	led := &LED{
+		driver: driver,
+		color:  defaultColor,
+		debug:  defaultDebug,
 	}
 
-	return &LED{
-		driver: driver,
-		color:  colornames.Royalblue,
-		debug:  debug,
+	for _, option := range options {
+		option(led)
+	}
+	return led
+}
+
+// WithDebug enables debug logging for the led driver
+func WithDebug() LEDOption {
+	return func(l *LED) {
+		l.debug = true
 	}
 }
 
