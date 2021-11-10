@@ -18,6 +18,6 @@ go get github.com/open-farms/bot
 
 ## Examples
 
-View the examples [./_examples](./examples)
+View the examples [here](./examples)
 
 More documentation can be found on [pkg.go.dev](https://pkg.go.dev/github.com/open-farms/bot)

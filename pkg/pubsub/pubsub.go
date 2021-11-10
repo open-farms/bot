@@ -59,10 +59,12 @@ func (c *Client) Disconnect(delay uint, done chan bool) {
 	done <- true
 }
 
-func (c *Client) Publish(topic string, payload interface{}) {
-	token := c.client.Publish(topic, 0, false, payload)
-	token.Wait()
-	logger.Log.Info().Str("topic", topic).Interface("payload", payload).Msg("sent")
+func (c *Client) Publish(topic string, payloads ...interface{}) {
+	for _, payload := range payloads {
+		token := c.client.Publish(topic, 0, false, payload)
+		token.Wait()
+		logger.Log.Info().Str("topic", topic).Interface("payload", payload).Msg("sent")
+	}
 }
 
 func (c *Client) Subscribe(topic string, handle mqtt.MessageHandler) {
