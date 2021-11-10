@@ -3,7 +3,7 @@ package gopigo_test
 import (
 	"time"
 
-	"github.com/open-farms/bot/pkg/gopigo"
+	"github.com/open-farms/bot/pkg/platforms/gopigo"
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/platforms/dexter/gopigo3"
 	"gobot.io/x/gobot/platforms/raspi"

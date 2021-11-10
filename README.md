@@ -4,6 +4,8 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/open-farms/bot.svg)](https://pkg.go.dev/github.com/open-farms/bot)
 
+![logo](./logo.png)
+
 ## What's inside? 📦
 
 - Simple publish/subscribe for IoT. Control a network of bots with minimal boilerplate
