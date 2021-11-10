@@ -2,29 +2,26 @@ package pubsub
 
 import (
 	"fmt"
-	"os"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
+	"github.com/open-farms/bot/internal/logger"
 )
 
 const (
 	PublicBroker = "broker.emqx.io"
 )
 
-var Logger = zerolog.New(os.Stdout).With().Logger().Level(zerolog.InfoLevel)
-
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	Logger.Info().Str("topic", msg.Topic()).Bytes("payload", msg.Payload()).Msg("received message")
+	logger.Log.Info().Str("topic", msg.Topic()).Bytes("payload", msg.Payload()).Msg("received message")
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	Logger.Info().Msgf("connected")
+	logger.Log.Info().Msgf("connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	Logger.Error().Err(err).Msg("connection lost")
+	logger.Log.Error().Err(err).Msg("connection lost")
 }
 
 type Client struct {
@@ -38,7 +35,7 @@ type SubscribeHandler func(topic string, handle mqtt.MessageHandler)
 func NewClient(broker string, port int) (*Client, error) {
 	opts := mqtt.NewClientOptions()
 	conn := fmt.Sprintf("tcp://%s:%d", broker, port)
-	Logger.Info().Str("broker", conn).Send()
+	logger.Log.Info().Str("broker", conn).Send()
 	id, err := uuid.NewUUID()
 	if err != nil {
 		return nil, err
@@ -65,11 +62,11 @@ func (c *Client) Disconnect(delay uint, done chan bool) {
 func (c *Client) Publish(topic string, payload interface{}) {
 	token := c.client.Publish(topic, 0, false, payload)
 	token.Wait()
-	Logger.Info().Str("topic", topic).Interface("payload", payload).Msg("sent")
+	logger.Log.Info().Str("topic", topic).Interface("payload", payload).Msg("sent")
 }
 
 func (c *Client) Subscribe(topic string, handle mqtt.MessageHandler) {
 	token := c.client.Subscribe(topic, 1, handle)
 	token.Wait()
-	Logger.Info().Str("topic", topic).Msgf("subscribed")
+	logger.Log.Info().Str("topic", topic).Msgf("subscribed")
 }

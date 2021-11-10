@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/open-farms/bot/pkg/move"
+	"github.com/open-farms/bot/pkg/move/controls"
 	"github.com/open-farms/bot/pkg/pubsub"
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/platforms/keyboard"
@@ -14,26 +16,39 @@ func main() {
 		log.Fatal(err)
 	}
 
-	keys := keyboard.NewDriver()
+	k := controls.NewKeyboard(client)
+	ctl := move.New(k)
 	work := func() {
-		keys.On(keyboard.Key, func(data interface{}) {
+		k.On(keyboard.Key, func(data interface{}) {
 			key := data.(keyboard.KeyEvent)
 			switch key.Key {
 			case keyboard.W:
-				client.Publish(pubsub.TopicControl, "front")
+				ctl.Move(move.Forward)
+			case keyboard.ArrowUp:
+				ctl.Move(move.Forward)
 			case keyboard.S:
-				client.Publish(pubsub.TopicControl, "back")
+				ctl.Move(move.Backward)
+			case keyboard.ArrowDown:
+				ctl.Move(move.Backward)
 			case keyboard.A:
-				client.Publish(pubsub.TopicControl, "left")
+				ctl.Move(move.Left)
+			case keyboard.ArrowLeft:
+				ctl.Move(move.Left)
 			case keyboard.D:
-				client.Publish(pubsub.TopicControl, "right")
+				ctl.Move(move.Right)
+			case keyboard.ArrowRight:
+				ctl.Move(move.Right)
+			case keyboard.Spacebar:
+				ctl.Move(move.Stop)
+			case keyboard.Escape:
+				ctl.Move(move.Stop)
 			}
 		})
 	}
 
 	robot := gobot.NewRobot("keyboard",
 		[]gobot.Connection{},
-		[]gobot.Device{keys},
+		[]gobot.Device{k.Driver},
 		work,
 	)
 

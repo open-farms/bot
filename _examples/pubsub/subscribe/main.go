@@ -4,8 +4,9 @@ import (
 	"log"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/open-farms/bot/pkg/control"
-	"github.com/open-farms/bot/pkg/gopigo"
+	"github.com/open-farms/bot/internal/logger"
+	"github.com/open-farms/bot/pkg/move"
+	"github.com/open-farms/bot/pkg/platforms/gopigo"
 	"github.com/open-farms/bot/pkg/pubsub"
 	"gobot.io/x/gobot"
 )
@@ -21,15 +22,17 @@ func main() {
 
 	work := func() {
 		client.Subscribe(pubsub.TopicControl, func(c mqtt.Client, m mqtt.Message) {
-			pubsub.Logger.Info().Msg((string(m.Payload())))
-			switch string(m.Payload()) {
-			case control.MoveFront:
-				client.Publish(pubsub.TopicControl, "received move front")
-			case control.MoveBack:
-				client.Publish(pubsub.TopicControl, "received move back")
-			case control.MoveLeft:
+			payload := string(m.Payload())
+			logger.Log.Info().Msg(payload)
+
+			switch payload {
+			case move.Forward.String():
+				client.Publish(pubsub.TopicControl, "received move forward")
+			case move.Backward.String():
+				client.Publish(pubsub.TopicControl, "received move backward")
+			case move.Backward.String():
 				client.Publish(pubsub.TopicControl, "received move left")
-			case control.MoveRight:
+			case move.Right.String():
 				client.Publish(pubsub.TopicControl, "received move right")
 			default:
 				return
