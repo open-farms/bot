@@ -1,7 +1,6 @@
 package gopigo
 
 import (
-	"math"
 	"os"
 
 	"github.com/rs/zerolog"
@@ -79,10 +78,8 @@ func (m *Motor) Left(speed int) error {
 
 // Right moves the robot to the right
 func (m *Motor) Right(speed int) error {
-	s := int(math.Abs(float64(speed)))
-
 	m.debug(gopigo3.MOTOR_RIGHT)
-	err := m.driver.SetMotorDps(gopigo3.MOTOR_RIGHT, s)
+	err := m.driver.SetMotorDps(gopigo3.MOTOR_LEFT, speed)
 	if err != nil {
 		return err
 	}
@@ -91,7 +88,7 @@ func (m *Motor) Right(speed int) error {
 }
 
 // Backwards moves backwards at a default speed
-func (m *Motor) Backwards(speed uint) error {
+func (m *Motor) Backward(speed uint) error {
 	s := int(speed) * -1
 	m.debug(gopigo3.MOTOR_RIGHT)
 	err := m.driver.SetMotorDps(gopigo3.MOTOR_LEFT, s)

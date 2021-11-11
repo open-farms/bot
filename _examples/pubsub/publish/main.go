@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"log"
+	"os"
 
 	"github.com/open-farms/bot/pkg/move"
 	"github.com/open-farms/bot/pkg/move/controls"
@@ -10,12 +13,24 @@ import (
 	"gobot.io/x/gobot/platforms/keyboard"
 )
 
-func main() {
-	client, err := pubsub.NewClient(pubsub.PublicBroker, 1883)
+func setupTLS(pemfile string) *tls.Config {
+	caPEM, err := os.ReadFile(pemfile)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
+	roots := x509.NewCertPool()
+	ok := roots.AppendCertsFromPEM(caPEM)
+	if !ok {
+		panic("failed to parse root certificate")
+	}
+
+	return &tls.Config{RootCAs: roots}
+}
+
+func main() {
+	// cert := setupTLS("./config/certs/ca.pem")
+	client := pubsub.NewClient(pubsub.PublicBroker, 1883, nil)
 	k := controls.NewKeyboard(client)
 	ctl := move.New(k)
 	work := func() {
@@ -52,8 +67,7 @@ func main() {
 		work,
 	)
 
-	err = robot.Start()
-	if err != nil {
+	if err := robot.Start(); err != nil {
 		log.Fatal(err)
 	}
 }

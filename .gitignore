@@ -11,6 +11,12 @@
 *.dylib
 bin/*
 
+## Certificates
+*.key
+*.pem
+*.csr
+*.srl
+
 # Test binary, built with `go test -c`
 *.test
 

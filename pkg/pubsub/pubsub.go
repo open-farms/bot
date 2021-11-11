@@ -1,6 +1,7 @@
 package pubsub
 
 import (
+	"crypto/tls"
 	"fmt"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -10,6 +11,7 @@ import (
 
 const (
 	PublicBroker = "broker.emqx.io"
+	LocalBroker  = "localhost"
 )
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
@@ -32,13 +34,14 @@ type PublishHandler func(topic string, payloads ...interface{})
 
 type SubscribeHandler func(topic string, handle mqtt.MessageHandler)
 
-func NewClient(broker string, port int) (*Client, error) {
+func NewClient(broker string, port int, credentials *tls.Config) *Client {
 	opts := mqtt.NewClientOptions()
 	conn := fmt.Sprintf("tcp://%s:%d", broker, port)
 	logger.Log.Info().Str("broker", conn).Send()
-	id, err := uuid.NewUUID()
-	if err != nil {
-		return nil, err
+	id, _ := uuid.NewUUID()
+
+	if credentials != nil {
+		opts.SetTLSConfig(credentials)
 	}
 
 	opts.AddBroker(conn)
@@ -46,12 +49,13 @@ func NewClient(broker string, port int) (*Client, error) {
 	opts.SetDefaultPublishHandler(messagePubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
+
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		return nil, token.Error()
+		logger.Log.Fatal().Err(token.Error()).Send()
 	}
 
-	return &Client{client: client}, nil
+	return &Client{client: client}
 }
 
 func (c *Client) Disconnect(delay uint, done chan bool) {
