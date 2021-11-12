@@ -19,5 +19,5 @@ func NewKeyboard(c *pubsub.Client) *Keyboard {
 }
 
 func (k *Keyboard) Move(d move.Direction) {
-	k.Client.Publish(pubsub.TopicControl, d.String())
+	k.Client.Publish(pubsub.TOPIC_CONTROL, d.String())
 }

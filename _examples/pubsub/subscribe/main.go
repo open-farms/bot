@@ -12,25 +12,36 @@ import (
 )
 
 func main() {
-	bot := gopigo.NewRobot()
+	gpg := gopigo.New()
 	done := make(chan bool, 1)
 
-	client := pubsub.NewClient(pubsub.PublicBroker, 1883, nil)
+	client := pubsub.NewClient(pubsub.PUBLIC_BROKER, 1883, nil)
 	work := func() {
-		client.Subscribe(pubsub.TopicControl, func(c mqtt.Client, m mqtt.Message) {
+		events := gpg.Subscribe()
+		go func() {
+			event := <-events
+			logger.Log.Info().Str("service", "bot").Str("event", event.Name).Interface("speed", event.Data).Send()
+			client.Publish(pubsub.TOPIC_INFO, event.Name)
+		}()
+
+		client.Subscribe(pubsub.TOPIC_CONTROL, func(c mqtt.Client, m mqtt.Message) {
 			payload := string(m.Payload())
-			logger.Log.Info().Msg(payload)
 			switch payload {
 			case move.Forward.String():
-				bot.Motor.Forward(360)
+				gpg.Motor.Forward(360)
+
 			case move.Backward.String():
-				bot.Motor.Backward(360)
+				gpg.Motor.Backward(360)
+
 			case move.Left.String():
-				bot.Motor.Left(360)
+				gpg.Motor.Left(360)
+
 			case move.Right.String():
-				bot.Motor.Right(360)
+				gpg.Motor.Right(360)
+
 			case move.Stop.String():
-				bot.Motor.Stop()
+				gpg.Motor.Stop()
+
 			default:
 				return
 			}
@@ -39,8 +50,8 @@ func main() {
 	}
 
 	robot := gobot.NewRobot("gopigo3",
-		[]gobot.Connection{bot.Adaptor},
-		[]gobot.Device{bot.Driver},
+		[]gobot.Connection{gpg.Adaptor},
+		[]gobot.Device{gpg.Driver},
 		work,
 	)
 

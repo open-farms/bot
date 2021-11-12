@@ -10,20 +10,20 @@ import (
 )
 
 const (
-	PublicBroker = "broker.emqx.io"
-	LocalBroker  = "localhost"
+	PUBLIC_BROKER = "broker.emqx.io"
+	LOCAL_BROKER  = "localhost"
 )
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	logger.Log.Info().Str("topic", msg.Topic()).Bytes("payload", msg.Payload()).Msg("received message")
+	logger.Log.Info().Str("service", "pubsub").Str("event", "received message").Str("topic", msg.Topic()).Bytes("payload", msg.Payload()).Send()
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	logger.Log.Info().Msgf("connected")
+	logger.Log.Info().Str("service", "pubsub").Str("event", "connected").Send()
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	logger.Log.Error().Err(err).Msg("connection lost")
+	logger.Log.Error().Str("service", "pubsub").Str("event", "connection lost").Err(err).Send()
 }
 
 type Client struct {
@@ -37,7 +37,7 @@ type SubscribeHandler func(topic string, handle mqtt.MessageHandler)
 func NewClient(broker string, port int, credentials *tls.Config) *Client {
 	opts := mqtt.NewClientOptions()
 	conn := fmt.Sprintf("tcp://%s:%d", broker, port)
-	logger.Log.Info().Str("broker", conn).Send()
+	logger.Log.Info().Str("service", "pubsub").Str("broker", conn).Send()
 	id, _ := uuid.NewUUID()
 
 	if credentials != nil {
@@ -52,7 +52,7 @@ func NewClient(broker string, port int, credentials *tls.Config) *Client {
 
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		logger.Log.Fatal().Err(token.Error()).Send()
+		logger.Log.Fatal().Str("service", "pubsub").Err(token.Error()).Send()
 	}
 
 	return &Client{client: client}
@@ -67,12 +67,12 @@ func (c *Client) Publish(topic string, payloads ...interface{}) {
 	for _, payload := range payloads {
 		token := c.client.Publish(topic, 0, false, payload)
 		token.Wait()
-		logger.Log.Info().Str("topic", topic).Interface("payload", payload).Msg("sent")
+		logger.Log.Info().Str("service", "pubsub").Str("event", "message sent").Str("topic", topic).Interface("payload", payload).Send()
 	}
 }
 
 func (c *Client) Subscribe(topic string, handle mqtt.MessageHandler) {
 	token := c.client.Subscribe(topic, 1, handle)
 	token.Wait()
-	logger.Log.Info().Str("topic", topic).Msgf("subscribed")
+	logger.Log.Info().Str("service", "pubsub").Str("topic", topic).Msgf("subscribed")
 }

@@ -1,7 +1,7 @@
 package pubsub
 
 const (
-	TopicControl = "topic/control"
-	TopicInfo    = "topic/info"
-	TopicError   = "topic/error"
+	TOPIC_CONTROL = "topic/control"
+	TOPIC_INFO    = "topic/info"
+	TOPIC_ERROR   = "topic/error"
 )

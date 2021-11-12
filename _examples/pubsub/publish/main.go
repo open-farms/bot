@@ -30,7 +30,7 @@ func setupTLS(pemfile string) *tls.Config {
 
 func main() {
 	// cert := setupTLS("./config/certs/ca.pem")
-	client := pubsub.NewClient(pubsub.PublicBroker, 1883, nil)
+	client := pubsub.NewClient(pubsub.PUBLIC_BROKER, 1883, nil)
 	k := controls.NewKeyboard(client)
 	ctl := move.New(k)
 	work := func() {

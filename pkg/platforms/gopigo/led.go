@@ -16,7 +16,6 @@ import (
 type LED struct {
 	driver *gopigo3.Driver
 	color  color.RGBA
-	debug  bool
 	logger zerolog.Logger
 }
 
@@ -24,33 +23,19 @@ type LEDOption func(*LED)
 
 // NewLED creates a new gopigo LED object for manipulating
 // the bots lights
-func NewLED(driver *gopigo3.Driver, options ...LEDOption) *LED {
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+func NewLED(driver *gopigo3.Driver) *LED {
 
 	var (
 		defaultColor  = colornames.Royalblue
-		defaultDebug  = false
 		defaultLogger = zerolog.New(os.Stderr)
 	)
 
 	led := &LED{
 		driver: driver,
 		color:  defaultColor,
-		debug:  defaultDebug,
 		logger: defaultLogger,
 	}
-
-	for _, option := range options {
-		option(led)
-	}
 	return led
-}
-
-// WithDebug enables debug logging for the led driver
-func WithDebug() LEDOption {
-	return func(l *LED) {
-		l.debug = true
-	}
 }
 
 // ApplyColor sets the color of the gopigo's LED
